@@ -1,18 +1,25 @@
+//Імпортуємо бібліотеки Vimeo та lodash.throttle
 import Vimeo from '@vimeo/player';
 import throttle from 'lodash.throttle';
 
+//Отримаємо посилання на iframe
 const iframe = document.querySelector('iframe');
+
+//Створюємо новий екземпляр
 const player = new Vimeo(iframe);
-const STORAGE_KEY = 'videoplayer-current-time';
+const storageKey = 'videoplayer-current-time';
 
-player.on('timeupdate', throttle(onPlay, 1000));
+//Отримаємо поточний час і зберегаємо його в localStorage
+player.on(
+  'timeupdate',
+  throttle(event => {
+    const currentTime = event.seconds;
+    localStorage.setItem(storageKey, currentTime);
+  }, 1000)
+);
 
-function onPlay(data) {
-  localStorage.setItem(STORAGE_KEY, data.seconds);
-}
-
-const currentTime = localStorage.getItem(STORAGE_KEY);
-
+//Завантажуємо поточний час з localStorage і переходимо до цього часу
+const currentTime = localStorage.getItem(storageKey);
 if (currentTime) {
   player.setCurrentTime(currentTime);
 }

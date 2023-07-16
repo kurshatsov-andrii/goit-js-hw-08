@@ -1,58 +1,62 @@
+//Імпортуємо бібліотеку lodash.throttle
 import throttle from 'lodash.throttle';
 
+//Формуємо об'єкт посилань
 const links = {
-  form: document.querySelector('.feedback-form'),
-  input: document.querySelector('input[type="email"]'),
-  textarea: document.querySelector('textarea[name="message"]'),
+  orderForm: document.querySelector('.feedback-form'),
+  inputEmail: document.querySelector('input[type="email"]'),
+  inputMessage: document.querySelector('textarea[name="message"]'),
 };
 
-const STORAGE_KEY = 'feedback-form-state';
+const storageKey = 'feedback-form-state';
 
-populateFormFields();
+//Перевіряємо заповнення полів форми
+checkFillingFormFields();
 
-let newStorageValue = {};
+let newDataValue = {};
 
-const storedValue = JSON.parse(localStorage.getItem(STORAGE_KEY));
+//Читаємо данні зі сховища
+const dataValue = JSON.parse(localStorage.getItem(storageKey));
 
-if (storedValue) {
-  newStorageValue.email = storedValue.email || '';
-  newStorageValue.message = storedValue.message || '';
+//Під час завантаження сторінки перевіряю стан сховища, і якщо там є збережені дані,
+//заповнюю ними поля форми. В іншому випадку поля повинні бути порожніми
+if (dataValue) {
+  newDataValue.email = dataValue.email || '';
+  newDataValue.message = dataValue.message || '';
 }
 
-links.form.addEventListener('input', throttle(onFormInputClick, 500));
-links.form.addEventListener('submit', onButtonSubmitClick);
+//Додаємо случачів на input та submit
+//Сховище оновлюється не частіше, ніж раз на 500 мілісекунд
+links.orderForm.addEventListener('input', throttle(onFormInputClick, 500));
+links.orderForm.addEventListener('submit', onButtonSubmitClick);
 
+//Фукція запису даних у сховище
 function onFormInputClick(event) {
   event.preventDefault();
-
-  newStorageValue[event.target.name] = event.target.value;
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newStorageValue));
+  newDataValue[event.target.name] = event.target.value;
+  localStorage.setItem(storageKey, JSON.stringify(newDataValue));
 }
 
-function populateFormFields() {
-  const storageData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
+//Функція перевірки заповнення полів форми
+function checkFillingFormFields() {
+  const storageData = JSON.parse(localStorage.getItem(storageKey));
   if (storageData) {
-    links.input.value = storageData.email ? storageData.email : '';
-    links.textarea.value = storageData.message ? storageData.message : '';
+    links.inputEmail.value = storageData.email ? storageData.email : '';
+    links.inputMessage.value = storageData.message ? storageData.message : '';
   }
 }
 
+//Фукція натискання на кнопку
 function onButtonSubmitClick(event) {
   event.preventDefault();
-
   const { email, message } = event.target.elements;
-
   if (!email.value || !message.value) {
-    return alert('Please fill in all the fields!');
+    return alert('Треба заповнити всі поля для відправки повідомлення!');
   }
-
-  console.log(newStorageValue);
-
-  newStorageValue = {};
-
+  //Під час сабміту форми очищую сховище і поля форми, а також вивожу у консоль об'єкт
+  //з полями email, message та їхніми поточними значеннями
+  console.log(newDataValue);
+  newDataValue = {};
   event.currentTarget.reset();
-
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(storageKey);
 }
